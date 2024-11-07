@@ -1,0 +1,3 @@
+Long-term todo
+-Make sure optional and required arguments are the same length when using the
+    csv counting method to count entries.
