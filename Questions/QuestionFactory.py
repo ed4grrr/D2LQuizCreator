@@ -7,6 +7,9 @@ Class: CSCI 1317 Introduction to Scripting Languages
 Instructor: Edgar Wallace Bowlin III
 Date Last Edited: 11/2/2024
 """
+
+import json
+from dataclasses import asdict
 from typing import Type
 
 from Questions.QuestionTemplates import *
@@ -16,8 +19,14 @@ class QuestionFactory:
 
     def __init__(self):
         self.QuestionTypes = {
-            "Short Answer": "SA", "Written Response": "WR", "Matching": "M",
-            "Multiple Choice": "MC", "True or False": "TF", "MultiSelection": "MS", "Ordering": "O"}
+            "Short Answer": "SA",
+            "Written Response": "WR",
+            "Matching": "M",
+            "Multiple Choice": "MC",
+            "True or False": "TF",
+            "MultiSelection": "MS",
+            "Ordering": "O",
+        }
 
     @classmethod
     def DetermineQuestionClass(cls, questionType: str) -> Type[BaseQuestion]:
@@ -45,3 +54,18 @@ class QuestionFactory:
         questionClass = cls.DetermineQuestionClass(questionType)
 
         return questionClass(**kwargs)
+
+    @classmethod
+    def CreateNewQuestionObjectFromJSON(cls, JSONString):
+        JSONData = JSONString
+        # print(JSONData)
+        questionClass = cls.DetermineQuestionClass(JSONData["QuestionType"])
+        questionType = JSONData["QuestionType"]
+        del JSONData["QuestionType"]
+        returnable = questionClass(**JSONData)
+        JSONData["QuestionType"] = questionType
+        return returnable
+
+    @classmethod
+    def toDict(cls, question):
+        return asdict(question)

@@ -1,3 +1,24 @@
 Long-term todo
--Make sure optional and required arguments are the same length when using the
-    csv counting method to count entries.
+- Implement advanced fields into the program
+    - must account for
+        - field creation
+        - field parsing
+        - field validation
+        - question editing
+        - quiz saving
+        - quiz loading
+        - CSV export
+- Save individual questions for later reuse/Load those saved questions to add to quizzes in progress
+- Copy Question?
+- Add Drag and Drop Functionality
+- Create Dark Mode
+- Implement Logger (toggled off/on? by default
+- Quiz Groups for certain courses?
+    - Quiz groups would be implemented using questionIDs as this program does not create D2L quizzes, but question pools
+        that the user can then use to create a D2L Quiz
+    - QuestionID can be used to group all question within one chapter with the same QuestionID
+    - Quiz group could be implemented through:
+        - just opening all files in a folder?
+        - making one big jumbo file?
+        - some other combination?
+- create in-depth documentation

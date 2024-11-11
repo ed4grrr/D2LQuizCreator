@@ -6,6 +6,7 @@
 from dataclasses import dataclass
 
 
+@dataclass
 class BaseQuestion:
     # *********************REQUIRED/OPTIONAL GENERAL QUESTION STRINGS**********************************
 
@@ -35,17 +36,19 @@ class BaseQuestion:
     ,,,,
     """
 
-    def __init__(self,
-                 QuestionType: str,
-                 QuestionText: str,
-                 Title: str = None,
-                 Points: int = None,
-                 Difficulty: int = None,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 Hint: str = None,
-                 QuestionFeedback: str = None):
+    def __init__(
+            self,
+            QuestionType: str,
+            QuestionText: str,
+            Title: str = None,
+            Points: int = None,
+            Difficulty: int = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
         self.QuestionType = QuestionType
         self.ID = ID
         self.Title = Title
@@ -60,10 +63,14 @@ class BaseQuestion:
         self.mandatoryFields = []
 
     def CreateQuestionCSVRepresentation(self):
-        raise NotImplemented
+        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
 
     def CreateMinimumQuestionCSVRepresentation(self):
-        return self.QUESTIONTYPELINE.format(QuestionType=self.QuestionType) + "\n" + self.CreateQuestionSpecificText()
+        return (
+                self.QUESTIONTYPELINE.format(QuestionType=f'"{self.QuestionType}"')
+                + "\n"
+                + self.CreateQuestionSpecificText()
+        )
 
     def CreateQuestionSpecificText(self):
         raise NotImplemented
@@ -74,29 +81,47 @@ class BaseQuestion:
         # Generic Question Set-up
 
         # Minimum Mandatory for Questions to Function
-        returnableQuestionString += BaseQuestion.QUESTIONTYPELINE.format(
-            QuestionType=self.QuestionType) + "\n"
+        returnableQuestionString += (
+                BaseQuestion.QUESTIONTYPELINE.format(QuestionType=f'"{self.QuestionType}"')
+                + "\n"
+        )
 
         if self.ID is not None:
-            returnableQuestionString += BaseQuestion.IDLINE.format(ID=self.ID) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.IDLINE.format(ID=f'"{self.ID}"') + "\n"
+            )
 
         if self.Title is not None:
-            returnableQuestionString += BaseQuestion.TITLELINE.format(Title=self.Title) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.TITLELINE.format(Title=f'"{self.Title}"') + "\n"
+            )
 
         # Minimum Mandatory for Questions to Function
-        returnableQuestionString += BaseQuestion.QUESTIONTEXTLINE.format(QuestionText=self.QuestionText) + "\n"
+        returnableQuestionString += (
+                BaseQuestion.QUESTIONTEXTLINE.format(QuestionText=f'"{self.QuestionText}"')
+                + "\n"
+        )
 
         if self.Points is not None:
-            returnableQuestionString += BaseQuestion.POINTSLINE.format(Points=self.Points) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.POINTSLINE.format(Points=f'"{self.Points}"') + "\n"
+            )
 
         if self.Difficulty is not None:
-            returnableQuestionString += BaseQuestion.DIFFICULTYlINE.format(Difficulty=self.Difficulty) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.DIFFICULTYlINE.format(Difficulty=f'"{self.Difficulty}"')
+                    + "\n"
+            )
 
         if self.ImagePath is not None:
-            returnableQuestionString += BaseQuestion.IMAGELINE.format(ImagePath=self.ImagePath) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.IMAGELINE.format(ImagePath=f'"{self.ImagePath}"') + "\n"
+            )
 
         if self.Scoring is not None:
-            returnableQuestionString += BaseQuestion.SCORINGlINE.format(Scoring=self.Scoring) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.SCORINGlINE.format(Scoring=f'"{self.Scoring}"') + "\n"
+            )
 
         # Specialized Question Set-up
 
@@ -104,41 +129,55 @@ class BaseQuestion:
 
         # Back to Generic setup
         if self.Hint is not None:
-            returnableQuestionString += BaseQuestion.HINTLINE.format(Hint=self.Hint) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.HINTLINE.format(Hint=f'"{self.Hint})"') + "\n"
+            )
         if self.QuestionFeedback is not None:
-            returnableQuestionString += BaseQuestion.FEEDBACKLINE.format(Feedback=self.QuestionFeedback) + "\n"
+            returnableQuestionString += (
+                    BaseQuestion.FEEDBACKLINE.format(Feedback=f'"{self.QuestionFeedback}"')
+                    + "\n"
+            )
 
         return returnableQuestionString
 
 
 # *************************QUESTION SPECIFIC STRINGS***********************
 
+
 @dataclass
 class ShortAnswerQuestion(BaseQuestion):
     INPUTBOXLIMITSLINE = "InputBox,{Minimum},{Maximum},,"
     ANSWERLINE = "Answer,{Points},{Answer},{RegEx},"
 
-    def __init__(self,
-
-                 QuestionText: str,
-
-                 Answers: list[str],
-
-                 PointsPerAnswer: list[int],
-                 Points: int = None,
-                 Difficulty: int = None,
-                 Title: str = None,
-                 RegExsForAnswers: list[str] = None,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 CharMinimumLength: int = 3,
-                 CharMaximumLength: int = 40,
-                 Hint: str = None,
-                 QuestionFeedback: str = None
-                 ):
-        super().__init__("SA", QuestionText, Title=Title, Points=Points, Difficulty=Difficulty, ID=ID,
-                         ImagePath=ImagePath, Scoring=Scoring, Hint=Hint, QuestionFeedback=QuestionFeedback)
+    def __init__(
+            self,
+            QuestionText: str,
+            Answers: list[str],
+            PointsPerAnswer: list[int],
+            Points: int = None,
+            Difficulty: int = None,
+            Title: str = None,
+            RegExsForAnswers: list[str] = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            CharMinimumLength: int = 3,
+            CharMaximumLength: int = 40,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
+        super().__init__(
+            "SA",
+            QuestionText,
+            Title=Title,
+            Points=Points,
+            Difficulty=Difficulty,
+            ID=ID,
+            ImagePath=ImagePath,
+            Scoring=Scoring,
+            Hint=Hint,
+            QuestionFeedback=QuestionFeedback,
+        )
         self.CharMinimumLength = CharMinimumLength
         self.CharMaximumLength = CharMaximumLength
         self.RegExsForAnswers = RegExsForAnswers
@@ -154,23 +193,28 @@ class ShortAnswerQuestion(BaseQuestion):
 
         # if the user provided RegExs for the answers
         if self.RegExsForAnswers is not None:
-            print("\n\nREGEX\n\n\n")
-            print(zip(self.Answers, self.PointsPerAnswer))
-            print("\n\n\n\n\n")
-            for Points, Answer, currRegEx in zip(self.Answers, self.PointsPerAnswer, self.RegExsForAnswers):
-                returnableString += ShortAnswerQuestion.ANSWERLINE.format(Points=Points, Answer=Answer,
-                                                                          RegEx=currRegEx) + "\n"
-        else:
-            print("\n\nNoneRegex\n\n\n")
-            print(zip(self.Answers, self.PointsPerAnswer))
-            print("\n\n\n\n\n")
-            for Points, Answer in zip(self.Answers, self.PointsPerAnswer):
-                returnableString += ShortAnswerQuestion.ANSWERLINE.format(Points=Points, Answer=Answer,
-                                                                          RegEx="") + "\n"
-        return returnableString
 
-    def CreateQuestionCSVRepresentation(self):
-        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
+            for Answer, Points, currRegEx in zip(
+                    self.Answers, self.PointsPerAnswer, self.RegExsForAnswers
+            ):
+                returnableString += (
+                        ShortAnswerQuestion.ANSWERLINE.format(
+                            Points=f'"{Points}"',
+                            Answer=f'"{Answer}"',
+                            RegEx=f'"{currRegEx}"',
+                        )
+                        + "\n"
+                )
+        else:
+
+            for Answer, Points in zip(self.Answers, self.PointsPerAnswer):
+                returnableString += (
+                        ShortAnswerQuestion.ANSWERLINE.format(
+                            Points=f'"{Points}"', Answer=f'"{Answer}"', RegEx=""
+                        )
+                        + "\n"
+                )
+        return returnableString
 
     def __str__(self):
         return self.CreateQuestionCSVRepresentation()
@@ -181,31 +225,48 @@ class WrittenAnswerQuestion(BaseQuestion):
     AnswerKey = "AnswerKey,{AnswerKey},,,"
     InitialText = "InitialText,{InitialText},,,"
 
-    def __init__(self, Title: str,
-                 QuestionText: str,
-                 Points: int,
-                 Difficulty: int,
-                 InitialText: str,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 AnswerKey: str = None,
-                 Hint: str = None,
-                 QuestionFeedback: str = None
-                 ):
-        super().__init__("WR", QuestionText, Title=Title, Points=Points, Difficulty=Difficulty, ID=ID,
-                         ImagePath=ImagePath, Scoring=Scoring, Hint=Hint, QuestionFeedback=QuestionFeedback)
+    def __init__(
+            self,
+            QuestionText: str,
+            Title: str = None,
+            Points: int = None,
+            Difficulty: int = None,
+            InitialText: str = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            AnswerKey: str = None,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
+        super().__init__(
+            "WR",
+            QuestionText,
+            Title=Title,
+            Points=Points,
+            Difficulty=Difficulty,
+            ID=ID,
+            ImagePath=ImagePath,
+            Scoring=Scoring,
+            Hint=Hint,
+            QuestionFeedback=QuestionFeedback,
+        )
         self.InitialText = InitialText
         self.AnswerKey = AnswerKey
 
     def CreateQuestionSpecificText(self):
         returnableQuestionString = ""
-        returnableQuestionString += WrittenAnswerQuestion.InitialText.format(InitialText=self.InitialText) + "\n"
-        returnableQuestionString += WrittenAnswerQuestion.AnswerKey.format(AnswerKey=self.AnswerKey) + "\n"
+        returnableQuestionString += (
+                WrittenAnswerQuestion.InitialText.format(
+                    InitialText=f'"{self.InitialText}"'
+                )
+                + "\n"
+        )
+        returnableQuestionString += (
+                WrittenAnswerQuestion.AnswerKey.format(AnswerKey=f'"{self.AnswerKey}"')
+                + "\n"
+        )
         return returnableQuestionString
-
-    def CreateQuestionCSVRepresentation(self):
-        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
 
     def __str__(self):
         return self.CreateQuestionCSVRepresentation()
@@ -213,26 +274,37 @@ class WrittenAnswerQuestion(BaseQuestion):
 
 @dataclass
 class MatchingQuestion(BaseQuestion):
-    Choice = 'Choice, {ChoiceNumber}, {ChoiceText},,'
-    Match = 'Match, {CorrectChoiceNumber}, {CorrectChoiceText}, ,'
+    Choice = "Choice, {ChoiceNumber}, {ChoiceText},,"
+    Match = "Match, {CorrectChoiceNumber}, {CorrectChoiceText}, ,"
 
-    def __init__(self,
-                 QuestionText: str,
-                 ListOfMatchNumbers: list[str],
-                 ListOfMatchingText: list[str],
-                 ListOfChoiceNumbers: list[str],
-                 ListOfChoiceText: list[str],
-                 Title: str = None,
-                 Points: int = None,
-                 Difficulty: int = None,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 Hint: str = None,
-                 QuestionFeedback: str = None
-                 ):
-        super().__init__("M", QuestionText, Title=Title, Points=Points, Difficulty=Difficulty, ID=ID,
-                         ImagePath=ImagePath, Scoring=Scoring, Hint=Hint, QuestionFeedback=QuestionFeedback)
+    def __init__(
+            self,
+            QuestionText: str,
+            ListOfMatchNumbers: list[str],
+            ListOfMatchingText: list[str],
+            ListOfChoiceNumbers: list[str],
+            ListOfChoiceText: list[str],
+            Title: str = None,
+            Points: int = None,
+            Difficulty: int = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
+        super().__init__(
+            "M",
+            QuestionText,
+            Title=Title,
+            Points=Points,
+            Difficulty=Difficulty,
+            ID=ID,
+            ImagePath=ImagePath,
+            Scoring=Scoring,
+            Hint=Hint,
+            QuestionFeedback=QuestionFeedback,
+        )
         self.ListOfChoiceNumbers = ListOfChoiceNumbers
         self.ListOfChoiceText = ListOfChoiceText
         self.ListOfMatchNumbers = ListOfMatchNumbers
@@ -246,17 +318,28 @@ class MatchingQuestion(BaseQuestion):
 
         returnableQuestionString = ""
 
-        for choiceNumber, choiceText in zip(self.ListOfChoiceNumbers, self.ListOfChoiceText):
-            returnableQuestionString += self.Choice.format(ChoiceNumber=choiceNumber, ChoiceText=choiceText) + "\n"
+        for choiceNumber, choiceText in zip(
+                self.ListOfChoiceNumbers, self.ListOfChoiceText
+        ):
+            returnableQuestionString += (
+                    self.Choice.format(
+                        ChoiceNumber=f'"{choiceNumber}"', ChoiceText=f'"{choiceText}"'
+                    )
+                    + "\n"
+            )
 
-        for matchNumber, matchAnswer in zip(self.ListOfMatchNumbers, self.ListOfMatchingText):
-            returnableQuestionString += self.Match.format(CorrectChoiceNumber=matchNumber,
-                                                          CorrectChoiceText=matchAnswer) + "\n"
+        for matchNumber, matchAnswer in zip(
+                self.ListOfMatchNumbers, self.ListOfMatchingText
+        ):
+            returnableQuestionString += (
+                    self.Match.format(
+                        CorrectChoiceNumber=f'"{matchNumber}"',
+                        CorrectChoiceText=f'"{matchAnswer}"',
+                    )
+                    + "\n"
+            )
 
         return returnableQuestionString
-
-    def CreateQuestionCSVRepresentation(self):
-        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
 
     def __str__(self):
         return self.CreateQuestionCSVRepresentation()
@@ -266,22 +349,33 @@ class MatchingQuestion(BaseQuestion):
 class MultipleChoiceQuestion(BaseQuestion):
     Option = "Option,{QuestionPoints},{OptionText},,{OptionFeedback}"
 
-    def __init__(self,
-                 QuestionText: str,
-                 ListOfOptions: list[str],
-                 ListOfPointsPerOption: list[str],
-                 Points: int = None,
-                 Difficulty: int = None,
-                 Title: str = None,
-                 ListOfFeedBack: list[str] = None,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 Hint: str = None,
-                 QuestionFeedback: str = None
-                 ):
-        super().__init__("MC", QuestionText, Title=Title, Points=Points, Difficulty=Difficulty, ID=ID,
-                         ImagePath=ImagePath, Scoring=Scoring, Hint=Hint, QuestionFeedback=QuestionFeedback)
+    def __init__(
+            self,
+            QuestionText: str,
+            ListOfOptions: list[str],
+            ListOfPointsPerOption: list[str],
+            Points: int = None,
+            Difficulty: int = None,
+            Title: str = None,
+            ListOfFeedBack: list[str] = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
+        super().__init__(
+            "MC",
+            QuestionText,
+            Title=Title,
+            Points=Points,
+            Difficulty=Difficulty,
+            ID=ID,
+            ImagePath=ImagePath,
+            Scoring=Scoring,
+            Hint=Hint,
+            QuestionFeedback=QuestionFeedback,
+        )
         self.ListOfFeedBack = ListOfFeedBack
         self.ListOfOptions = ListOfOptions
         self.ListOfPointsPerOption = ListOfPointsPerOption
@@ -293,19 +387,31 @@ class MultipleChoiceQuestion(BaseQuestion):
         returnableQuestionString = ""
 
         if self.ListOfFeedBack is not None:
-            for questionPoints, optionText, optionFeedback in zip(self.ListOfPointsPerOption, self.ListOfOptions,
-                                                                  self.ListOfFeedBack):
-                returnableQuestionString += self.Option.format(QuestionPoints=questionPoints, OptionText=optionText,
-                                                               OptionFeedback=optionFeedback) + "\n"
+            for questionPoints, optionText, optionFeedback in zip(
+                    self.ListOfPointsPerOption, self.ListOfOptions, self.ListOfFeedBack
+            ):
+                returnableQuestionString += (
+                        self.Option.format(
+                            QuestionPoints=f'"{questionPoints}"',
+                            OptionText=f'"{optionText}"',
+                            OptionFeedback=f'"{optionFeedback}"',
+                        )
+                        + "\n"
+                )
         else:
-            for questionPoints, optionText in zip(self.ListOfPointsPerOption, self.ListOfOptions):
-                returnableQuestionString += self.Option.format(QuestionPoints=questionPoints, OptionText=optionText,
-                                                               OptionFeedback="") + "\n"
+            for questionPoints, optionText in zip(
+                    self.ListOfPointsPerOption, self.ListOfOptions
+            ):
+                returnableQuestionString += (
+                        self.Option.format(
+                            QuestionPoints=f'"{questionPoints}"',
+                            OptionText=f'"{optionText}"',
+                            OptionFeedback="",
+                        )
+                        + "\n"
+                )
 
         return returnableQuestionString
-
-    def CreateQuestionCSVRepresentation(self):
-        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
 
     def __str__(self):
         return self.CreateQuestionCSVRepresentation()
@@ -316,23 +422,34 @@ class TrueFalseQuestion(BaseQuestion):
     TRUELINE = "TRUE,{TruePoints},{TrueFeedback}"
     FASLELINE = "FALSE,{FalsePoints},{FalseFeedback}"
 
-    def __init__(self,
-                 QuestionText: str,
-                 TruePoints: int,
-                 FalsePoints: int,
-                 Title: str = None,
-                 Points: int = None,
-                 Difficulty: int = None,
-                 TrueFeedback: str = None,
-                 FalseFeedback: str = None,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 Hint: str = None,
-                 QuestionFeedback: str = None
-                 ):
-        super().__init__("TF", QuestionText, Title=Title, Points=Points, Difficulty=Difficulty, ID=ID,
-                         ImagePath=ImagePath, Scoring=Scoring, Hint=Hint, QuestionFeedback=QuestionFeedback)
+    def __init__(
+            self,
+            QuestionText: str,
+            TruePoints: int,
+            FalsePoints: int,
+            Title: str = None,
+            Points: int = None,
+            Difficulty: int = None,
+            TrueFeedback: str = None,
+            FalseFeedback: str = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
+        super().__init__(
+            "TF",
+            QuestionText,
+            Title=Title,
+            Points=Points,
+            Difficulty=Difficulty,
+            ID=ID,
+            ImagePath=ImagePath,
+            Scoring=Scoring,
+            Hint=Hint,
+            QuestionFeedback=QuestionFeedback,
+        )
         self.TruePoints = TruePoints
         self.FalsePoints = FalsePoints
         self.FalseFeedback = FalseFeedback
@@ -345,21 +462,36 @@ class TrueFalseQuestion(BaseQuestion):
         returnableQuestionString = ""
 
         if self.TrueFeedback is not None:
-            returnableQuestionString += self.TRUELINE.format(TruePoints=self.TruePoints,
-                                                             TrueFeedback=self.TrueFeedback) + "\n"
+            returnableQuestionString += (
+                    self.TRUELINE.format(
+                        TruePoints=f'"{self.TruePoints}"',
+                        TrueFeedback=f'"{self.TrueFeedback}"',
+                    )
+                    + "\n"
+            )
         else:
-            returnableQuestionString += self.TRUELINE.format(TruePoints=self.TruePoints, TrueFeedback="") + "\n"
+            returnableQuestionString += (
+                    self.TRUELINE.format(TruePoints=f'"{self.TruePoints}"', TrueFeedback="")
+                    + "\n"
+            )
 
         if self.FalseFeedback is not None:
-            returnableQuestionString += self.FASLELINE.format(FalsePoints=self.FalsePoints,
-                                                              FalseFeedback=self.FalseFeedback) + "\n"
+            returnableQuestionString += (
+                    self.FASLELINE.format(
+                        FalsePoints=f'"{self.FalsePoints}"',
+                        FalseFeedback=f'"{self.FalseFeedback}"',
+                    )
+                    + "\n"
+            )
         else:
-            returnableQuestionString += self.FASLELINE.format(FalsePoints=self.FalsePoints, FalseFeedback="") + "\n"
+            returnableQuestionString += (
+                    self.FASLELINE.format(
+                        FalsePoints=f'"{self.FalsePoints}"', FalseFeedback=""
+                    )
+                    + "\n"
+            )
 
         return returnableQuestionString
-
-    def CreateQuestionCSVRepresentation(self):
-        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
 
     def __str__(self):
         return self.CreateQuestionCSVRepresentation()
@@ -369,22 +501,33 @@ class TrueFalseQuestion(BaseQuestion):
 class MultiSelectionQuestion(BaseQuestion):
     MULTISELECTIONOPTIONLINE = """Option,{points},{OptionText},,{OptionFeedback}"""
 
-    def __init__(self,
-                 QuestionText: str,
-                 PointsPerAnswer: list[int],
-                 OptionText: list[str],
-                 Points: int = None,
-                 Difficulty: int = None,
-                 Title: str = None,
-                 OptionFeedback: list[str] = None,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 Hint: str = None,
-                 QuestionFeedback: str = None
-                 ):
-        super().__init__("MS", QuestionText, Title=Title, Points=Points, Difficulty=Difficulty, ID=ID,
-                         ImagePath=ImagePath, Scoring=Scoring, Hint=Hint, QuestionFeedback=QuestionFeedback)
+    def __init__(
+            self,
+            QuestionText: str,
+            PointsPerAnswer: list[int],
+            OptionText: list[str],
+            Points: int = None,
+            Difficulty: int = None,
+            Title: str = None,
+            OptionFeedback: list[str] = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
+        super().__init__(
+            "MS",
+            QuestionText,
+            Title=Title,
+            Points=Points,
+            Difficulty=Difficulty,
+            ID=ID,
+            ImagePath=ImagePath,
+            Scoring=Scoring,
+            Hint=Hint,
+            QuestionFeedback=QuestionFeedback,
+        )
         self.OptionFeedback = OptionFeedback
         self.PointsPerAnswer = PointsPerAnswer
         self.OptionText = OptionText
@@ -396,18 +539,29 @@ class MultiSelectionQuestion(BaseQuestion):
         returnableQuestionString = ""
 
         if self.OptionFeedback is not None:
-            for points, OptionText, OptionFeedback in zip(self.PointsPerAnswer, self.OptionText, self.OptionFeedback):
-                returnableQuestionString += self.MULTISELECTIONOPTIONLINE.format(points=points, OptionText=OptionText,
-                                                                                 OptionFeedback=OptionFeedback) + "\n"
+            for points, OptionText, OptionFeedback in zip(
+                    self.PointsPerAnswer, self.OptionText, self.OptionFeedback
+            ):
+                returnableQuestionString += (
+                        self.MULTISELECTIONOPTIONLINE.format(
+                            points=f'"{points}"',
+                            OptionText=f'"{OptionText}"',
+                            OptionFeedback=f'"{OptionFeedback}"',
+                        )
+                        + "\n"
+                )
         else:
             for points, OptionText in zip(self.PointsPerAnswer, self.OptionText):
-                returnableQuestionString += self.MULTISELECTIONOPTIONLINE.format(points=points, OptionText=OptionText,
-                                                                                 OptionFeedback="") + "\n"
+                returnableQuestionString += (
+                        self.MULTISELECTIONOPTIONLINE.format(
+                            points=f'"{points}"',
+                            OptionText=f'"{OptionText}"',
+                            OptionFeedback="",
+                        )
+                        + "\n"
+                )
 
         return returnableQuestionString
-
-    def CreateQuestionCSVRepresentation(self):
-        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
 
     def __str__(self):
         return self.CreateQuestionCSVRepresentation()
@@ -417,22 +571,33 @@ class MultiSelectionQuestion(BaseQuestion):
 class OrderingQuestion(BaseQuestion):
     ORDERITEMLINE = """Item,{ItemText},{IsHTML},{OptionFeedback},"""
 
-    def __init__(self,
-                 QuestionText: str,
-                 ListOfItems: list[str],
-                 Title: str = None,
-                 Points: int = None,
-                 Difficulty: int = None,
-                 ListOfIsHTML: list[bool] = None,
-                 ListOfFeedback: list[str] = None,
-                 ID: str = None,
-                 ImagePath: str = None,
-                 Scoring: str = None,
-                 Hint: str = None,
-                 QuestionFeedback: str = None
-                 ):
-        super().__init__("O", QuestionText, Title=Title, Points=Points, Difficulty=Difficulty, ID=ID,
-                         ImagePath=ImagePath, Scoring=Scoring, Hint=Hint, QuestionFeedback=QuestionFeedback)
+    def __init__(
+            self,
+            QuestionText: str,
+            ListOfItems: list[str],
+            Title: str = None,
+            Points: int = None,
+            Difficulty: int = None,
+            ListOfIsHTML: list[bool] = None,
+            ListOfFeedback: list[str] = None,
+            ID: str = None,
+            ImagePath: str = None,
+            Scoring: str = None,
+            Hint: str = None,
+            QuestionFeedback: str = None,
+    ):
+        super().__init__(
+            "O",
+            QuestionText,
+            Title=Title,
+            Points=Points,
+            Difficulty=Difficulty,
+            ID=ID,
+            ImagePath=ImagePath,
+            Scoring=Scoring,
+            Hint=Hint,
+            QuestionFeedback=QuestionFeedback,
+        )
         self.ListOfIsHTML = ListOfIsHTML
         self.ListOfFeedback = ListOfFeedback
         self.ListOfItems = ListOfItems
@@ -443,22 +608,35 @@ class OrderingQuestion(BaseQuestion):
         returnableQuestionString = ""
 
         if self.ListOfFeedback is not None:
-            for items, isHTML, feedback in zip(self.ListOfItems, self.ListOfIsHTML, self.ListOfFeedback):
-                returnableQuestionString += self.ORDERITEMLINE.format(ItemText=items, IsHTML=isHTML,
-                                                                      OptionFeedback=feedback) + "\n"
+            for items, isHTML, feedback in zip(
+                    self.ListOfItems, self.ListOfIsHTML, self.ListOfFeedback
+            ):
+                returnableQuestionString += (
+                        self.ORDERITEMLINE.format(
+                            ItemText=f'"{items}"',
+                            IsHTML=f'"{isHTML}"',
+                            OptionFeedback=f'"{feedback}"',
+                        )
+                        + "\n"
+                )
         elif self.ListOfIsHTML is not None:
             for items, isHTML in zip(self.ListOfItems, self.ListOfIsHTML):
-                returnableQuestionString += self.ORDERITEMLINE.format(ItemText=items, IsHTML=isHTML,
-                                                                      OptionFeedback="") + "\n"
+                returnableQuestionString += (
+                        self.ORDERITEMLINE.format(
+                            ItemText=f'"{items}"', IsHTML=f'"{isHTML}"', OptionFeedback=""
+                        )
+                        + "\n"
+                )
         else:
             for items in self.ListOfItems:
-                returnableQuestionString += self.ORDERITEMLINE.format(ItemText=items, IsHTML="",
-                                                                      OptionFeedback="") + "\n"
+                returnableQuestionString += (
+                        self.ORDERITEMLINE.format(
+                            ItemText=f'"{items}"', IsHTML="", OptionFeedback=""
+                        )
+                        + "\n"
+                )
 
         return returnableQuestionString
-
-    def CreateQuestionCSVRepresentation(self):
-        return self.CreateGeneralQuestionText(self.CreateQuestionSpecificText())
 
     def __str__(self):
         return self.CreateQuestionCSVRepresentation()
