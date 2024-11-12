@@ -1,14 +1,22 @@
 import json
 import tkinter as tk
 from tkinter import messagebox, Menu, filedialog
-
+from typing import TextIO
 from GUI.AddQuestionWindow import AddQuestionWindow
 from Questions.QuestionFactory import QuestionFactory
 
 
 class QuestionManagerApp:
-    def __init__(self, root):
+    """
+    The Main Screen Class for this program
+    """
 
+    def __init__(self, root: tk.Tk):
+        """
+        initializes the main screen for this program
+
+        :param root: the TK object used to run tkinter guis
+        """
         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&initialize variables for later use&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
         # ***********************************Used for Editing Questions ***********************************************
@@ -44,7 +52,12 @@ class QuestionManagerApp:
         # Time to actually make the widgets for this window
         self.__InitializeMainWindow(root)
 
-    def __InitializeMainWindow(self, root):
+    def __InitializeMainWindow(self, root: tk.Tk):
+        """
+        Initializes all main menu widgets and stores them for later use
+
+        :param root: the Tk object and TCL interpreter being used currently
+        """
         # basic tkinter window config
         self.root = root
         self.root.title("Question Manager")
@@ -53,7 +66,12 @@ class QuestionManagerApp:
         self.__CreateMenu()
         self.__AddListBoxAndButtons(root)
 
-    def __AddListBoxAndButtons(self, root):
+    def __AddListBoxAndButtons(self, root: tk.Tk):
+        """
+        Creates the necessary buttons to interact with the main screen.
+
+        :param root: the Tk object and TCL interpreter being used currently
+        """
         # Listbox to display questions
         self.questionListbox = tk.Listbox(root, width=100, height=15)
         self.questionListbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -78,6 +96,9 @@ class QuestionManagerApp:
         self.editQuestionListboxIndex = 0
 
     def __CreateMenu(self):
+        """
+        Creates the menu at the top of the window that traditionally hold File, Edit, etc.
+        """
         # create menu bar to hold menus
         self.menubar = Menu(self.root)
         self.root.config(menu=self.menubar)
@@ -98,7 +119,9 @@ class QuestionManagerApp:
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
 
     def __ClearQuiz(self):
-
+        """
+        Clears the current quiz.
+        """
         # These three things are vital to resetting the quiz, especially when using loading new quiz in-progress files
         self.questionDataDict.clear()
         self.questions.clear()
@@ -106,7 +129,9 @@ class QuestionManagerApp:
         self.question_id_entry.delete(0, tk.END)
 
     def __LoadFromDQIP(self):
-
+        """
+        Load a DQIP file into the program to begin editing a quiz
+        """
         # If quiz is unsaved, then warn user before loading file
         if self.questionListbox.size() != 0 and not messagebox.askokcancel(
                 "Unsaved Quiz",
@@ -135,16 +160,19 @@ class QuestionManagerApp:
         # load values from JSON into the appropriate fields.
         self.__InsertLoadedValuesIntoQuiz(JSONData)
 
-    def __InsertLoadedValuesIntoQuiz(self, JSONData):
+    def __InsertLoadedValuesIntoQuiz(self, JSONData: dict):
+        """
+        inserts the values in the loaded DQIP file into the appropriate fields for editing
 
+        :param JSONData: the parsed JSON Data to be read
+        """
         # loop through each value found in the JSON. The keys are simple integers and are not necessary for loading the
         # quiz.
 
         # ################ THE BELOW CODE IS A TEMPORARY< HACKY WAY TO ADD QUESTION ID################################
         values = JSONData["1"]["QuestionData"]
         self.question_id_entry.insert(
-            0,
-            (f"{values["ID"]}" if "ID" in values.keys() else ""),
+            0, (f"{values["ID"]}" if "ID" in values.keys() else "")
         )
         ##################### PLEASE REPLACE THE ABOVE CODE IN ADVANCED SETTINGS REFACTOR###########################
         for values in JSONData.values():
@@ -166,7 +194,9 @@ class QuestionManagerApp:
             ]
 
     def __SaveToDQIP(self):
-
+        """
+        Saves the currently loaded quiz to a file for later editing or exporting.
+        """
         # create a dict to store questions to be saved
         questionsToSave = {}
 
@@ -190,8 +220,12 @@ class QuestionManagerApp:
         with open(file_path, "w") as file:
             file.write(savable)
 
-    def __CollectAllSavableQuestions(self, questionsToSave):
+    def __CollectAllSavableQuestions(self, questionsToSave: dict):
+        """
+        gathers all the questions and various metadata to be saved to a DQIP file
 
+        :param questionsToSave: the dictionary to be filled with the question data
+        """
         # adds all questions to a dict to be saved to the DQIP file
         for index, key in enumerate(self.questionListbox.get(0, tk.END), 1):
             ##############################HACKY WAY TO ADD ID TO QUESTIONS##############################################
@@ -207,7 +241,9 @@ class QuestionManagerApp:
             }
 
     def __SaveToFile(self):
-
+        """
+        Saves the current quiz to a D2l Friendly quiz CSV format
+        """
         # ask user for a filepath to use to create a save file (CSV)
         file_path = filedialog.asksaveasfilename(
             defaultextension=".csv",
@@ -227,8 +263,12 @@ class QuestionManagerApp:
             # saved the data to a CSV
             self.__SaveQuestionsToCSVFile(file)
 
-    def __SaveQuestionsToCSVFile(self, file):
+    def __SaveQuestionsToCSVFile(self, file: TextIO):
+        """
+        exports the currently loaded quiz questions into the currently opened file
 
+        :param file: a file object containing the filepath the user wants to use
+        """
         for question in self.questions:
             # Write question CSV form to the file
             file.write(question.CreateQuestionCSVRepresentation())
@@ -237,14 +277,22 @@ class QuestionManagerApp:
             file.write(",,,,\n,,,,\n")
 
     def __onExit(self):
+        """
+        Exits programs
+        """
         self.root.quit()
 
     def __OpenAddQuestionWindow(self):
+        """
+        Opens the add question window
+        """
         # Opens the Add Question window and passes the callback to add questions
         AddQuestionWindow(self.root, self.__AddQuestion)
 
     def __OpenEditQuestionWindow(self):
-
+        """
+        Opens the edit question window
+        """
         # first, make sure user has a question selected
         if self.questionListbox.curselection() != ():
 
@@ -265,6 +313,14 @@ class QuestionManagerApp:
             )
 
     def __InitializeEditQuestionMode(self):
+        """
+        use to prep the program to re-add the edited question in the appropriate data structures
+
+        this is used to make sure that the question edited is re-added at the index it was selected from in the various
+        data structures used in this file. This keeps track of the index
+        :return: the dict storing the question data of the chosen question
+        """
+
         # store the currently selected listbox element's index so that the newly edited question can be stored in the
         # same listbox location
         self.editQuestionListboxIndex = self.questionListbox.curselection()[0]
@@ -282,7 +338,7 @@ class QuestionManagerApp:
         questionData = self.questionDataDict[self.questionListbox.get(tk.ACTIVE)][0]
         return questionData
 
-    def __AddQuestion(self, question_data):
+    def __AddQuestion(self, question_data: dict):
         """
         Adds a question entry to the list of questions and displays it in the Listbox.
         """
@@ -300,7 +356,17 @@ class QuestionManagerApp:
         # insert string representation into the listbox for visual user feedback
         self.questionListbox.insert(tk.END, question_summary)
 
-    def __PrepForAddingOrEditingQuestion(self, question_data):
+    def __PrepForAddingOrEditingQuestion(self, question_data: dict):
+        """
+        prepare the program to add/edit a question
+
+        This method does the bookkeeping necessary to succesfully add and edit questions, while adding them to the
+        appropriate tracking data structures.
+
+
+        :param question_data: the dict holding the chosen question's data, if editing a question
+        :return: a question object, a string containing the question type, and a question data dict for that question.
+        """
         # create a string representation of the current question
         questionString = ""
 
@@ -325,7 +391,7 @@ class QuestionManagerApp:
 
         return questionToAdd, questionType, question_summary
 
-    def __EditQuestion(self, question_data):
+    def __EditQuestion(self, question_data: dict):
         """
         Adds a question entry to the list of questions and displays it in the Listbox.
         """
@@ -347,7 +413,7 @@ class QuestionManagerApp:
         # insert edited question string into old question's string place
         self.questionListbox.insert(self.editQuestionListboxIndex, question_summary)
 
-    def __DeleteSelectedQuestion(self, specificIndex=None):
+    def __DeleteSelectedQuestion(self, specificIndex: int = None):
         """
         Deletes the selected question from the list and the Listbox.
         """

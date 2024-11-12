@@ -17,6 +17,11 @@ from GUI.AddEditOptionWindow import AddEditOptionWindow
 
 
 class AddQuestionWindow:
+    """
+    used to add/edit a question to the current quiz
+    """
+
+
     def __init__(
         self, root, ReturnValueAcceptingFunction, listbox=None, listBoxDict=None
     ):
@@ -88,7 +93,7 @@ class AddQuestionWindow:
         }
 
         # General Properties Section
-        self.InitializeGeneralFields()
+        self.__InitializeGeneralFields()
 
         # Define restricted fields and their properties
         self.RESTRICTED_FIELDS = {
@@ -163,11 +168,14 @@ class AddQuestionWindow:
         self.specificQuestionFields = {}
 
         # especially necessary if editing a question
-        self.UpdateGeneralQuestionFields()
+        self.__UpdateGeneralQuestionFields()
 
-        self.InitializeSpecificQuestionFields()
+        self.___InitializeSpecificQuestionFields()
 
-    def InitializeSpecificQuestionFields(self):
+    def ___InitializeSpecificQuestionFields(self):
+        """
+        initializes the specific question fields depending on question type selected
+        """
         # Specific Question Properties Frame
         self.specificQuestionFieldsFrame = tk.LabelFrame(
             self.root, text="Specific Question Properties", padx=10, pady=10
@@ -177,13 +185,13 @@ class AddQuestionWindow:
         )
         self.tree = None
         # Initialize specific properties with default type
-        self.UpdateSpecificQuestionFields()
+        self.__UpdateSpecificQuestionFields()
         # Initialize Advanced fields checkbox
         self.isSpecificAdvancedCheckBox = tk.Checkbutton(
             self.root,
             text="Show Specific Question Advanced Fields",
             variable=self.isShowingSpecificAdvancedFeatures,
-            command=self.UpdateSpecificQuestionFields,
+            command=self.__UpdateSpecificQuestionFields,
         )
         # currently disabled as these features are not yet implemented
         self.isSpecificAdvancedCheckBox.config(state="disabled")
@@ -195,7 +203,11 @@ class AddQuestionWindow:
         )
         self.submitQuestionButton.pack(pady=10)
 
-    def InitializeGeneralFields(self):
+    def __InitializeGeneralFields(self):
+        """
+        initializes general question fields
+        """
+
 
         # create frame to organize general fields
         self.generalQuestionFieldsFrame = tk.LabelFrame(
@@ -208,7 +220,7 @@ class AddQuestionWindow:
             self.root,
             text="Show General Questions Advanced Fields",
             variable=self.isShowingGeneralAdvancedFeatures,
-            command=self.UpdateGeneralQuestionFields,
+            command=self.__UpdateGeneralQuestionFields,
         )
         # currently not implement, so disabled
         self.generalAdvancedRadioButton.config(state="disabled")
@@ -225,6 +237,13 @@ class AddQuestionWindow:
         self.__CreateGeneralFieldEntries()
 
     def __CreateGeneralFieldEntries(self):
+        """
+        Creates the general fields to be used in this window.
+
+        The fields created here are shared across all question types.
+        """
+
+
 
         # add combox to list of all general fields
         self.generalQuestionFields["QuestionType"] = self.questionTypeComboBox
@@ -283,7 +302,7 @@ class AddQuestionWindow:
 
         # Use this to make sure the combobox updates when selected
         self.questionTypeComboBox.bind(
-            "<<ComboboxSelected>>", self.UpdateSpecificQuestionFields
+            "<<ComboboxSelected>>", self.__UpdateSpecificQuestionFields
         )
 
         # if editing question, grab its question type and set the combobox to that setting and lock the combobox
@@ -297,7 +316,7 @@ class AddQuestionWindow:
         else:
             self.questionTypeComboBox.current(0)
 
-    def UpdateSpecificQuestionFields(self, event=None):
+    def __UpdateSpecificQuestionFields(self, event=None):
         """
         Updates the specific fields based on the selected question type and resizes the frame dynamically.
         """
@@ -315,10 +334,10 @@ class AddQuestionWindow:
         question_type = self.questionTypeComboBox.get()
 
         # Hide all fields in the specific frame before updating
-        self.ClearSpecificQuestionFields()
+        self.__ClearSpecificQuestionFields()
 
         # Show only the fields relevant to the selected question type
-        self.CreateSpecificQuestionFields(question_type)
+        self.__CreateSpecificQuestionFields(question_type)
 
         # Dynamically resize the specific frame to fit the newly displayed widgets
         self.specificQuestionFieldsFrame.update_idletasks()
@@ -326,7 +345,7 @@ class AddQuestionWindow:
             fill="both", expand=True, padx=10, pady=10
         )
 
-    def UpdateGeneralQuestionFields(self, event=None):
+    def __UpdateGeneralQuestionFields(self, event=None):
         """
         Updates the general fields based on the selected question type and resizes the frame dynamically.
         """
@@ -342,7 +361,7 @@ class AddQuestionWindow:
             )
 
         # Hide all fields in the specific frame before updating
-        self.ClearGeneralQuestionFields()
+        self.__ClearGeneralQuestionFields()
 
         # Show only the fields relevant to the selected question type
         self.__CreateGeneralFields()
@@ -351,27 +370,37 @@ class AddQuestionWindow:
         self.generalQuestionFieldsFrame.update_idletasks()
         self.generalQuestionFieldsFrame.pack(fill="both", expand=True, padx=10, pady=10)
 
-    def ClearSpecificQuestionFields(self):
+    def __ClearSpecificQuestionFields(self):
+        """
+        clears the specific question field widgets
+        """
         self.specificQuestionFields.clear()
         # Clear existing specific fields
         for widget in self.specificQuestionFieldsFrame.winfo_children():
             widget.destroy()
 
-    def ClearGeneralQuestionFields(self):
+    def __ClearGeneralQuestionFields(self):
+        """
+        clears the general question field widgets
+        """
         self.generalQuestionFields.clear()
         # Clear existing general fields
         for widget in self.generalQuestionFieldsFrame.winfo_children():
             widget.destroy()
 
     def __SyncComboBoxFields(self, updated_field, linked_field):
-        """Synchronize values for TruePoints and FalsePoints"""
+        """
+        Synchronize values for TruePoints and FalsePoints
+        """
         updated_value = int(self.specificQuestionFields[updated_field].get())
         linked_value = 100 if updated_value == 0 else 0
         self.specificQuestionFields[linked_field].set(linked_value)
         self.root.update_idletasks()
 
     def __ValidateShortAnswerChars(self):
-        """Validate that MaxChars > MinChars for Short Answer"""
+        """
+        Validate that MaxChars > MinChars for Short Answer
+        """
         min_chars = int(self.specificQuestionFields["CharMinimumLength"].get())
         max_chars = int(self.specificQuestionFields["CharMaximumLength"].get())
 
@@ -384,7 +413,13 @@ class AddQuestionWindow:
             self.specificQuestionFields["CharMaximumLength"].delete(0, "end")
             self.specificQuestionFields["CharMaximumLength"].insert(0, min_chars + 1)
 
-    def CreateSpecificQuestionFields(self, question_type):
+    def __CreateSpecificQuestionFields(self, question_type):
+        """
+        Creates specific question fields based on the chosen question type.
+
+        :param question_type: a string that contains the question type
+        """
+
         specific_fields = self.getSpecificFieldsByQuestionType(question_type)
 
         for idx, (label, field_type) in enumerate(specific_fields):
@@ -420,6 +455,13 @@ class AddQuestionWindow:
                 self.__CreateTreeviewManagementButtons(idx, label)
 
     def __CreateTreeView(self, idx, label, question_type):
+        """
+        create the table used for storing the option values of the chosen question
+
+        :param idx: the current int row index of the frame being packed
+        :param label: string, the label to be used as the label for the treeview object
+        :param question_type: a string containing the question type of chosen question
+        """
         # Create a Treeview widget
         columns = list(self.QuestionTypeFields[question_type].keys())
 
@@ -451,6 +493,13 @@ class AddQuestionWindow:
         self.specificQuestionFields[label] = self.tree
 
     def __CreateTreeviewManagementButtons(self, idx, label):
+        """
+        creates the add/edit/delete buttons for the treeview
+
+        :param idx: the current int row index of the frame being packed
+        :param label: a string containing the label to name the widget
+        """
+
         # Add, Edit, Delete buttons for managing treeview entries
         button_frame = tk.Frame(self.specificQuestionFieldsFrame)
         button_frame.grid(row=idx, column=2, sticky="w")
@@ -460,7 +509,7 @@ class AddQuestionWindow:
             # this is a bit of a cheat that allows for something that calls for a method
             # identifier and not a method call, BUT you need a method call to give specific
             # arguments. Anonymous functions FTW. This can be seen in all button widgets
-            command=lambda: self.openAddWindow(
+            command=lambda: self.__openAddWindow(
                 tk.Toplevel(self.root),
                 self.questionTypeComboBox.get(),
                 label,
@@ -471,7 +520,7 @@ class AddQuestionWindow:
         edit_button = tk.Button(
             button_frame,
             text="Edit",
-            command=lambda: self.openEditWindow(
+            command=lambda: self.__openEditWindow(
                 tk.Toplevel(self.root),
                 self.questionTypeComboBox.get(),
                 label,
@@ -487,6 +536,12 @@ class AddQuestionWindow:
         delete_button.pack(side=tk.TOP, fill=tk.X, pady=1)
 
     def __CreateAndUpdateEntry(self, idx, label):
+        """
+        creates widgets and inserts values if editing a question
+
+        :param idx: the current int row index of the frame being packed
+        :param label:  a string containing the label to name the widget
+        """
         entry = tk.Entry(self.specificQuestionFieldsFrame, width=50)
 
         # if editing a question, insert the existing value
@@ -498,6 +553,13 @@ class AddQuestionWindow:
         self.specificQuestionFields[label] = entry
 
     def __CreateAndUpdateComboBox(self, idx, label, restriction):
+        """
+        creates and updates combobox with existing values, if necessary
+
+        :param idx: the current int row index of the frame being packed
+        :param label:  a string containing the label to name the widget
+        :param restriction: a dict containing strings describing the restriction placed on the entry field
+        """
         combobox = ttk.Combobox(
             self.specificQuestionFieldsFrame,
             values=restriction["values"],
@@ -522,6 +584,13 @@ class AddQuestionWindow:
         self.specificQuestionFields[label] = combobox
 
     def __CreateAndUpdateSpinBox(self, idx, label, restriction):
+        """
+        Creates and updates spinbox with value if necessary
+
+        :param idx: the current int row index of the frame being packed
+        :param label:  a string containing the label to name the widget
+        :param restriction: a dict containing the restricts to be placed on certain widgets
+        """
         spinbox = tk.Spinbox(
             self.specificQuestionFieldsFrame,
             from_=restriction["min"],
@@ -537,10 +606,11 @@ class AddQuestionWindow:
             spinbox.insert(0, self.listBoxDict[label])
         self.specificQuestionFields[label] = spinbox
 
-    def openAddWindow(self, root, comboBox, label, tree):
+    def __openAddWindow(self, root, comboBox, label, tree):
+        """"""
         AddEditOptionWindow(root, comboBox, label, tree, False)
 
-    def openEditWindow(
+    def __openEditWindow(
         self,
         root,
         comboBox,
