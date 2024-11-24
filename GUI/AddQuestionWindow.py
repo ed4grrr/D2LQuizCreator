@@ -21,7 +21,6 @@ class AddQuestionWindow:
     used to add/edit a question to the current quiz
     """
 
-
     def __init__(
         self, root, ReturnValueAcceptingFunction, listbox=None, listBoxDict=None
     ):
@@ -208,7 +207,6 @@ class AddQuestionWindow:
         initializes general question fields
         """
 
-
         # create frame to organize general fields
         self.generalQuestionFieldsFrame = tk.LabelFrame(
             self.root, text="General Properties", padx=10, pady=10
@@ -242,8 +240,6 @@ class AddQuestionWindow:
 
         The fields created here are shared across all question types.
         """
-
-
 
         # add combox to list of all general fields
         self.generalQuestionFields["QuestionType"] = self.questionTypeComboBox
