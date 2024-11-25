@@ -15,6 +15,7 @@ if __name__ == "__main__":
 
     docParser.ParseBasisDocxIntoText()
     docParser.ParseTextIntoQuestions()
-
+    questionObjects = []
     for questions in docParser.parsedQuestions:
-        print(questions)
+        questionObjects.append(docParser.create_question_object(questions))
+    docParser.SaveToFile(questionObjects)

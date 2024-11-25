@@ -2,6 +2,8 @@ import json
 import tkinter as tk
 from tkinter import messagebox, Menu, filedialog
 from typing import TextIO
+
+from DocxParser import DocxParser
 from GUI.AddQuestionWindow import AddQuestionWindow
 from Questions.QuestionFactory import QuestionFactory
 
@@ -108,12 +110,20 @@ class QuestionManagerApp:
 
         # config the new above menu
         self.fileMenu.add_command(
-            label="Export To D2L-Friendly Quiz CSV", command=self.__SaveToFile
+            label="Export Quiz To D2L CSV", command=self.__SaveToFile
         )
+
         self.fileMenu.add_command(
-            label="Save In-Progress Quiz", command=self.__SaveToDQIP
+            label="Export Docx File to D2L CSV", command=self.__CreateQuizFromDocx
         )
-        self.fileMenu.add_command(label="Load", command=self.__LoadFromDQIP)
+
+        self.fileMenu.add_command(
+            label="Save Incomplete Quiz", command=self.__SaveToDQIP
+        )
+
+        self.fileMenu.add_command(
+            label="Load Incomplete Quiz", command=self.__LoadFromDQIP
+        )
 
         # add fileMenu to the existing menubar
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
@@ -239,6 +249,16 @@ class QuestionManagerApp:
                 "QuestionData": self.questionDataDict[key][0],
                 "Question": self.questionFactory.toDict(self.questionDataDict[key][1]),
             }
+
+    def __CreateQuizFromDocx(self):
+        docParser = DocxParser("DocxQuizzesToBeMade")
+
+        docParser.ParseBasisDocxIntoText()
+        docParser.ParseTextIntoQuestions()
+        questionObjects = []
+        for questions in docParser.parsedQuestions:
+            questionObjects.append(docParser.create_question_object(questions))
+        docParser.SaveToFile(questionObjects)
 
     def __SaveToFile(self):
         """

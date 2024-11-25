@@ -10,9 +10,22 @@ Date Last Edited: 11/4/2024
 
 import re
 from fileinput import filename
+from tkinter import filedialog
+from typing import List, TextIO
 from zipfile import ZipFile
 import xml.etree.ElementTree as ET
 from tkinter.filedialog import askopenfilename
+
+from Questions.QuestionTemplates import (
+    BaseQuestion,
+    MultipleChoiceQuestion,
+    MultiSelectionQuestion,
+    WrittenAnswerQuestion,
+    ShortAnswerQuestion,
+    MatchingQuestion,
+    TrueFalseQuestion,
+    OrderingQuestion,
+)
 
 
 class DocxParser:
@@ -110,7 +123,7 @@ class DocxParser:
     def ParseTextIntoQuestions(self):
 
         self.listFullOfNewlineChars = self.text.split("\n\n")
-        # print(self.listFullOfNewlineChars)
+        print(self.listFullOfNewlineChars)
         self.parsedQuestions = [
             bulkText.split("\n") for bulkText in self.listFullOfNewlineChars
         ]
@@ -119,5 +132,128 @@ class DocxParser:
             for questions in self.parsedQuestions
         ]
 
-    def ParseMultipleChoiceQuestion(self):
-        pass
+    def clean_option_text(self, option_text):
+        # Match one letter (upper or lower case), followed by a punctuation mark and a space
+        option_text = option_text.replace("*", "", 1).strip()
+        return re.sub(r"^\*?[a-zA-Z][.)\-]\s", "", option_text)
+
+    def create_question_object(self, question_data: List) -> BaseQuestion:
+        # Extract the type of question and the question list from the data
+        question_type = question_data[0]
+        question_list = question_data[1]
+        # print(f")))){question_data}(((((((")
+        if question_list[0].lower().strip() in ["mc", "ma", "bl", "tf"]:
+            del question_list[0]
+        # print(f"***{question_list}***")
+
+        # Determine which type of question to instantiate
+        if question_type == "Multiple Choice":
+            return MultipleChoiceQuestion(
+                QuestionText=question_list[0],
+                ListOfOptions=[
+                    self.clean_option_text(opt) for opt in question_list[1:]
+                ],
+                ListOfPointsPerOption=[
+                    100 if opt.startswith("*") else 0 for opt in question_list[1:]
+                ],
+                Points=100,
+            )
+        elif question_type == "MultSelection":
+            return MultiSelectionQuestion(
+                QuestionText=question_list[0],
+                OptionText=[self.clean_option_text(opt) for opt in question_list[1:]],
+                PointsPerAnswer=[
+                    100 if opt.startswith("*") else 0 for opt in question_list[1:]
+                ],
+                Points=100,
+            )
+        elif question_type == "Written Response":
+            return WrittenAnswerQuestion(QuestionText=question_list[0])
+        elif question_type == "Short Answer":
+            return ShortAnswerQuestion(
+                QuestionText=(
+                    question_list[0]
+                    if question_list[0][0:6].lower() != "blank "
+                    else question_list[0][6:]
+                ),
+                Answers=[
+                    self.clean_option_text(opt[0:].strip()) for opt in question_list[1:]
+                ],
+                PointsPerAnswer=[100] * len(question_list[1:]),
+                Points=100,
+            )
+        elif question_type == "Matching":
+            return MatchingQuestion(
+                QuestionText=(
+                    question_list[0]
+                    if question_list[0][0:6].lower() != "match "
+                    else question_list[0][6:]
+                ),
+                ListOfChoiceNumbers=[
+                    str(idx + 1) for idx in range(len(question_list[1:]))
+                ],
+                ListOfChoiceText=[
+                    opt.split(" / ")[0].strip()[3:] for opt in question_list[1:]
+                ],
+                ListOfMatchNumbers=[
+                    str(idx + 1) for idx in range(len(question_list[1:]))
+                ],
+                ListOfMatchingText=[
+                    opt.split(" / ")[1].strip() for opt in question_list[1:]
+                ],
+            )
+        elif question_type == "Ordering":
+            return OrderingQuestion(
+                QuestionText=(
+                    question_list[0]
+                    if question_list[0][0:6].lower() != "order "
+                    else question_list[0][6:]
+                ),
+                ListOfItems=[item.strip() for item in question_list[1:]],
+            )
+        elif question_type == "True or False":
+            true_points = 100 if question_list[1].lower() == "true" else 0
+            false_points = 100 if question_list[1].lower() == "false" else 0
+            return TrueFalseQuestion(
+                QuestionText=question_list[0],
+                TruePoints=true_points,
+                FalsePoints=false_points,
+            )
+        else:
+            raise ValueError("Unknown question type.")
+
+    def SaveToFile(self, questions):
+        """
+        Saves the current quiz to a D2l Friendly quiz CSV format
+        """
+        # ask user for a filepath to use to create a save file (CSV)
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[
+                ("CSV Files", "*.csv"),
+                ("Text Files", "*.txt"),
+                ("All files", "*.*"),
+            ],
+        )
+
+        # if filepath is empty, we cannot save. Return control to the user.
+        if file_path == "":
+            return
+
+        # open filepath and create file (if non-existent) for saving the CSV
+        with open(file_path, "w") as file:
+            # saved the data to a CSV
+            self.__SaveQuestionsToCSVFile(file, questions)
+
+    def __SaveQuestionsToCSVFile(self, file: TextIO, questions):
+        """
+        exports the currently loaded quiz questions into the currently opened file
+
+        :param file: a file object containing the filepath the user wants to use
+        """
+        for question in questions:
+            # Write question CSV form to the file
+            file.write(question.CreateQuestionCSVRepresentation())
+
+            # serves new lines in this CSV file
+            file.write(",,,,\n,,,,\n")
