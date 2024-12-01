@@ -29,12 +29,8 @@ from Questions.QuestionTemplates import (
 
 
 class DocxParser:
-    def __init__(self, startingDirectory):
-        self.currentDocPath = askopenfilename(
-            initialdir=startingDirectory,
-            defaultextension=".docx",
-            filetypes=[("Word Documents", "*.docx"), ("All files", "*.*")],
-        )
+    def __init__(self, currentDocPath):
+        self.currentDocPath = currentDocPath
         self.listFullOfNewlineChars: list[str] = None
         self.text: str = None
         self.parsedQuestions: list[str] = None
@@ -222,21 +218,26 @@ class DocxParser:
         else:
             raise ValueError("Unknown question type.")
 
-    def SaveToFile(self, questions):
+    def SaveToFile(self, questions, saveFileName=None, saveFolderPath=None):
         """
         Saves the current quiz to a D2l Friendly quiz CSV format
         """
         # ask user for a filepath to use to create a save file (CSV)
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".csv",
-            filetypes=[
-                ("CSV Files", "*.csv"),
-                ("Text Files", "*.txt"),
-                ("All files", "*.*"),
-            ],
-        )
+        if saveFileName is None or saveFolderPath is None:
+            file_path = filedialog.asksaveasfilename(
+                initialdir=".\\QuizzesToBeUploaded",
+                defaultextension=".csv",
+                filetypes=[
+                    ("CSV Files", "*.csv"),
+                    ("Text Files", "*.txt"),
+                    ("All files", "*.*"),
+                ],
+            )
+        else:
+            file_path = saveFolderPath + "/" + saveFileName
 
         # if filepath is empty, we cannot save. Return control to the user.
+        print(f"THIS IS FILE PATH {file_path}")
         if file_path == "":
             return
 

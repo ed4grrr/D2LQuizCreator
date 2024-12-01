@@ -1,8 +1,9 @@
 import json
 import tkinter as tk
 from tkinter import messagebox, Menu, filedialog
+from tkinter.filedialog import askopenfilename
 from typing import TextIO
-
+from pathlib import Path
 from DocxParser import DocxParser
 from GUI.AddQuestionWindow import AddQuestionWindow
 from Questions.QuestionFactory import QuestionFactory
@@ -105,17 +106,11 @@ class QuestionManagerApp:
         self.menubar = Menu(self.root)
         self.root.config(menu=self.menubar)
 
-        # create new menu within menubar
+        # create new menus within menubar
         self.fileMenu = Menu(self.menubar)
+        self.exportMenu = Menu(self.menubar)
 
-        # config the new above menu
-        self.fileMenu.add_command(
-            label="Export Quiz To D2L CSV", command=self.__SaveToFile
-        )
-
-        self.fileMenu.add_command(
-            label="Export Docx File to D2L CSV", command=self.__CreateQuizFromDocx
-        )
+        # config the new above menus
 
         self.fileMenu.add_command(
             label="Save Incomplete Quiz", command=self.__SaveToDQIP
@@ -125,8 +120,22 @@ class QuestionManagerApp:
             label="Load Incomplete Quiz", command=self.__LoadFromDQIP
         )
 
-        # add fileMenu to the existing menubar
+        self.exportMenu.add_command(
+            label="Export Quiz To D2L CSV", command=self.__SaveToFile
+        )
+
+        self.exportMenu.add_command(
+            label="Export Docx File to D2L CSV", command=self.__CreateQuizFromDocx
+        )
+
+        self.exportMenu.add_command(
+            label="Export Docx Files to D2L CSV",
+            command=self.__CreateMultipleDocxQuizzes,
+        )
+
+        # add dropdowns to the existing menubar
         self.menubar.add_cascade(label="File", menu=self.fileMenu)
+        self.menubar.add_cascade(label="Export", menu=self.exportMenu)
 
     def __ClearQuiz(self):
         """
@@ -250,17 +259,64 @@ class QuestionManagerApp:
                 "Question": self.questionFactory.toDict(self.questionDataDict[key][1]),
             }
 
-    def __CreateQuizFromDocx(self):
-        docParser = DocxParser("DocxQuizzesToBeMade")
+    # ty chat gpt for writing menial code
+    def __CreateMultipleDocxQuizzes(self):
+        docxFolderPath = filedialog.askdirectory(
+            initialdir=".\\DocxQuizzesToBeMade",
+            title="Select a Folder containing Docx Files",
+        )
+
+        # if filepath is empty, we cannot save. Return control to the user.
+        if docxFolderPath == "":
+            return
+        folder = Path(docxFolderPath)
+        saveFolderPath = filedialog.askdirectory(
+            initialdir=".\\QuizzesToBeUploaded",
+            title="Select a destination folder for CSV files.",
+        )
+        if saveFolderPath == "":
+            return
+
+        for file_path in folder.rglob("*.docx"):
+            if file_path.is_file():
+                self.__CreateQuizFromDocx(
+                    filePath=file_path,
+                    saveFileName=file_path.name,
+                    saveFolderPath=saveFolderPath,
+                )
+
+    def __CreateQuizFromDocx(
+            self, filePath=None, saveFileName=None, saveFolderPath=None
+    ):
+
+        if filePath is None:
+            docParser = DocxParser(
+                askopenfilename(
+                    initialdir=".\\DocxQuizzesToBeMade",
+                    defaultextension=".docx",
+                    filetypes=[("Word Documents", "*.docx"), ("All files", "*.*")],
+                )
+            )
+        else:
+            docParser = DocxParser(filePath)
 
         docParser.ParseBasisDocxIntoText()
         docParser.ParseTextIntoQuestions()
         questionObjects = []
         for questions in docParser.parsedQuestions:
             questionObjects.append(docParser.create_question_object(questions))
-        docParser.SaveToFile(questionObjects)
+        if saveFileName is None or saveFolderPath is None:
+            docParser.SaveToFile(questionObjects)
+        else:
+            docParser.SaveToFile(
+                questionObjects,
+                saveFileName=saveFileName.replace(".docx", ".csv"),
+                saveFolderPath=saveFolderPath,
+            )
 
-    def __SaveToFile(self):
+    def __SaveToFile(
+            self,
+    ):
         """
         Saves the current quiz to a D2l Friendly quiz CSV format
         """

@@ -1,0 +1,1 @@
+pyinstaller .\GUI\MainGui.py --onefile --distpath .\Executable -n D2LQuizCSVCreator -w
