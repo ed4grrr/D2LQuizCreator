@@ -1,9 +1,11 @@
 import json
+import random
 import tkinter as tk
-from tkinter import messagebox, Menu, filedialog
+from pathlib import Path
+from tkinter import messagebox, Menu, filedialog, ttk
 from tkinter.filedialog import askopenfilename
 from typing import TextIO
-from pathlib import Path
+
 from DocxParser import DocxParser
 from GUI.AddQuestionWindow import AddQuestionWindow
 from Questions.QuestionFactory import QuestionFactory
@@ -24,6 +26,10 @@ class QuestionManagerApp:
 
         # ***********************************Used for Editing Questions ***********************************************
         # this is used to pass the currently edited question's listbox index IF it needs to be replaced.
+        self.listOfTestQuestions = []
+        self.numberOfQuestionsForTestLabel = None
+        self.toggle_var = None
+        self.numberOfQuestionsForTest = None
         self.editQuestionListboxIndex = None
         # this is used to pass the currently edited question's list index IF it needs to be replaced.
         self.editQuestionListIndex = None
@@ -68,6 +74,43 @@ class QuestionManagerApp:
         # Methods to set up the required widgets
         self.__CreateMenu()
         self.__AddListBoxAndButtons(root)
+        self.CreateTestOptionArea(root)
+
+    def CreateTestOptionArea(self, root):
+        self.toggle_var = tk.BooleanVar()
+        self.toggle_var.set(False)  # Initially off
+        # Create the toggle check button
+        toggle_btn = ttk.Checkbutton(
+            root,
+            text="Create Test from Quizzes",
+            variable=self.toggle_var,
+            command=lambda: self.toggle_entry(),
+        )
+        toggle_btn.pack(pady=10)
+        # Create a label for the entry box
+        self.numberOfQuestionsForTestLabel = ttk.Label(root, text="Enter an Integer:")
+        self.numberOfQuestionsForTestLabel.pack(pady=(10, 0))
+        self.numberOfQuestionsForTestLabel.state(["disabled"])
+        # Create the integer-only entry box
+        self.numberOfQuestionsForTest = ttk.Entry(root)
+        self.numberOfQuestionsForTest.pack(pady=10)
+        self.numberOfQuestionsForTest.state(["disabled"])
+        # Set up validation for the entry box to accept only integers
+        vcmd = (root.register(self.only_integers), "%P")
+        self.numberOfQuestionsForTest.config(validate="key", validatecommand=vcmd)
+
+    def toggle_entry(self):
+        """Enables or disables the entry box based on the state of the toggle button."""
+        if self.toggle_var.get():
+            self.numberOfQuestionsForTest.state(["!disabled"])
+            self.numberOfQuestionsForTest.state(["!disabled"])
+        else:
+            self.numberOfQuestionsForTest.state(["disabled"])
+            self.numberOfQuestionsForTest.state(["disabled"])
+
+    def only_integers(self, char):
+        """Validation function to allow only integer input."""
+        return char.isdigit() or char == ""
 
     def __AddListBoxAndButtons(self, root: tk.Tk):
         """
@@ -284,6 +327,8 @@ class QuestionManagerApp:
                     saveFileName=file_path.name,
                     saveFolderPath=saveFolderPath,
                 )
+        if self.toggle_var:
+            self.__SaveTestToFile()
 
     def __CreateQuizFromDocx(
             self, filePath=None, saveFileName=None, saveFolderPath=None
@@ -300,11 +345,10 @@ class QuestionManagerApp:
         else:
             docParser = DocxParser(filePath)
 
-        docParser.ParseBasisDocxIntoText()
-        docParser.ParseTextIntoQuestions()
-        questionObjects = []
-        for questions in docParser.parsedQuestions:
-            questionObjects.append(docParser.create_question_object(questions))
+        questionObjects = self.__ParseDocxIntoQuestions(docParser)
+
+        self.__isMakingTest(questionObjects)
+
         if saveFileName is None or saveFolderPath is None:
             docParser.SaveToFile(questionObjects)
         else:
@@ -313,6 +357,27 @@ class QuestionManagerApp:
                 saveFileName=saveFileName.replace(".docx", ".csv"),
                 saveFolderPath=saveFolderPath,
             )
+
+    def __isMakingTest(self, questionObjects):
+        if self.toggle_var:
+            for question in random.choices(
+                    questionObjects,
+                    k=(
+                            int(self.numberOfQuestionsForTest.get())
+                            if int(self.numberOfQuestionsForTest.get()) < len(questionObjects)
+                            else len(questionObjects)
+                    ),
+            ):
+                self.listOfTestQuestions.append(question)
+
+    def __ParseDocxIntoQuestions(self, docParser):
+        docParser.ParseBasisDocxIntoText()
+        docParser.ParseTextIntoQuestions()
+        questionObjects = []
+        for questions in docParser.parsedQuestions:
+            questionObjects.append(docParser.create_question_object(questions))
+
+        return questionObjects
 
     def __SaveToFile(
             self,
@@ -339,13 +404,42 @@ class QuestionManagerApp:
             # saved the data to a CSV
             self.__SaveQuestionsToCSVFile(file)
 
-    def __SaveQuestionsToCSVFile(self, file: TextIO):
+    def __SaveTestToFile(
+            self,
+    ):
+        """
+        Saves the current quiz to a D2l Friendly quiz CSV format
+        """
+        # ask user for a filepath to use to create a save file (CSV)
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[
+                ("CSV Files", "*.csv"),
+                ("Text Files", "*.txt"),
+                ("All files", "*.*"),
+            ],
+            title="Select a File to Save the Test file",
+        )
+
+        # if filepath is empty, we cannot save. Return control to the user.
+        if file_path == "":
+            return
+
+        # open filepath and create file (if non-existent) for saving the CSV
+        with open(file_path, "w") as file:
+            # saved the data to a CSV
+            self.__SaveQuestionsToCSVFile(file, questions=self.listOfTestQuestions)
+        self.listOfTestQuestions.clear()
+
+    def __SaveQuestionsToCSVFile(self, file: TextIO, questions=None):
         """
         exports the currently loaded quiz questions into the currently opened file
 
         :param file: a file object containing the filepath the user wants to use
         """
-        for question in self.questions:
+        if questions is None:
+            questions = self.questions
+        for question in questions:
             # Write question CSV form to the file
             file.write(question.CreateQuestionCSVRepresentation())
 

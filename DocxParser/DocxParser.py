@@ -237,7 +237,6 @@ class DocxParser:
             file_path = saveFolderPath + "/" + saveFileName
 
         # if filepath is empty, we cannot save. Return control to the user.
-        print(f"THIS IS FILE PATH {file_path}")
         if file_path == "":
             return
 
