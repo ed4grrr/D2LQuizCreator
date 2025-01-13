@@ -359,7 +359,7 @@ class QuestionManagerApp:
             )
 
     def __isMakingTest(self, questionObjects):
-        if self.toggle_var:
+        if self.toggle_var.get():
             for question in random.choices(
                     questionObjects,
                     k=(

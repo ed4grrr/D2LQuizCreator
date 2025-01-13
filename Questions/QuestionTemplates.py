@@ -153,7 +153,7 @@ class ShortAnswerQuestion(BaseQuestion):
             self,
             QuestionText: str,
             Answers: list[str],
-            PointsPerAnswer: list[int],
+            PointsPerAnswer: list[int] = None,
             Points: int = None,
             Difficulty: int = None,
             Title: str = None,
@@ -194,8 +194,9 @@ class ShortAnswerQuestion(BaseQuestion):
         # if the user provided RegExs for the answers
         if self.RegExsForAnswers is not None:
 
+            # CHANGE THIS BACK TO POINTS PER ANSWER IN Future Revisions
             for Answer, Points, currRegEx in zip(
-                    self.Answers, self.PointsPerAnswer, self.RegExsForAnswers
+                    self.Answers, [100] * len(self.Answers), self.RegExsForAnswers
             ):
                 returnableString += (
                         ShortAnswerQuestion.ANSWERLINE.format(
@@ -206,8 +207,8 @@ class ShortAnswerQuestion(BaseQuestion):
                         + "\n"
                 )
         else:
-
-            for Answer, Points in zip(self.Answers, self.PointsPerAnswer):
+            # CHANGE THIS BACK TO POINTS PER ANSWER IN Future Revisions
+            for Answer, Points in zip(self.Answers, [100] * len(self.Answers)):
                 returnableString += (
                         ShortAnswerQuestion.ANSWERLINE.format(
                             Points=f'"{Points}"', Answer=f'"{Answer}"', RegEx=""

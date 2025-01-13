@@ -97,11 +97,11 @@ class DocxParser:
 
         if "bl" in first_element or "blank" in first_element:
             return "Short Answer"
-        elif "match" in first_element:
+        elif "ma" in first_element:
             return "Matching"
-        elif "order" in first_element:
+        elif "o" in first_element:
             return "Ordering"
-        elif len(question_data) == 1:
+        elif "wr" in first_element:
             return "Written Response"
 
         elif "tf" in first_element or (
@@ -111,7 +111,7 @@ class DocxParser:
 
         elif "mc" in first_element or not self.CountEntriesWithAsterisks(question_data):
             return "Multiple Choice"
-        elif "ma" in first_element or self.CountEntriesWithAsterisks(question_data):
+        elif "ms" in first_element or self.CountEntriesWithAsterisks(question_data):
             return "MultSelection"
         else:
             return "Unknown"
@@ -138,7 +138,15 @@ class DocxParser:
         question_type = question_data[0]
         question_list = question_data[1]
         # print(f")))){question_data}(((((((")
-        if question_list[0].lower().strip() in ["mc", "ma", "bl", "tf"]:
+        if question_list[0].lower().strip() in [
+            "mc",
+            "ma",
+            "bl",
+            "tf",
+            "wr",
+            "o",
+            "ms",
+        ]:
             del question_list[0]
         # print(f"***{question_list}***")
 
@@ -152,19 +160,19 @@ class DocxParser:
                 ListOfPointsPerOption=[
                     100 if opt.startswith("*") else 0 for opt in question_list[1:]
                 ],
-                Points=100,
+                Points=1,
             )
         elif question_type == "MultSelection":
             return MultiSelectionQuestion(
                 QuestionText=question_list[0],
                 OptionText=[self.clean_option_text(opt) for opt in question_list[1:]],
                 PointsPerAnswer=[
-                    100 if opt.startswith("*") else 0 for opt in question_list[1:]
+                    1 if opt.startswith("*") else 0 for opt in question_list[1:]
                 ],
-                Points=100,
+                Points=1,
             )
         elif question_type == "Written Response":
-            return WrittenAnswerQuestion(QuestionText=question_list[0])
+            return WrittenAnswerQuestion(QuestionText=question_list[0], Points=1)
         elif question_type == "Short Answer":
             return ShortAnswerQuestion(
                 QuestionText=(
@@ -175,8 +183,7 @@ class DocxParser:
                 Answers=[
                     self.clean_option_text(opt[0:].strip()) for opt in question_list[1:]
                 ],
-                PointsPerAnswer=[100] * len(question_list[1:]),
-                Points=100,
+                Points=1,
             )
         elif question_type == "Matching":
             return MatchingQuestion(
@@ -197,6 +204,7 @@ class DocxParser:
                 ListOfMatchingText=[
                     opt.split(" / ")[1].strip() for opt in question_list[1:]
                 ],
+                Points=1,
             )
         elif question_type == "Ordering":
             return OrderingQuestion(
@@ -206,6 +214,7 @@ class DocxParser:
                     else question_list[0][6:]
                 ),
                 ListOfItems=[item.strip() for item in question_list[1:]],
+                Points=1,
             )
         elif question_type == "True or False":
             true_points = 100 if question_list[1].lower() == "true" else 0
@@ -214,6 +223,7 @@ class DocxParser:
                 QuestionText=question_list[0],
                 TruePoints=true_points,
                 FalsePoints=false_points,
+                Points=1,
             )
         else:
             raise ValueError("Unknown question type.")
