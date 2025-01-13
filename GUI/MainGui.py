@@ -612,5 +612,11 @@ class QuestionManagerApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
+
+    # Load the icon image
+    icon = tk.PhotoImage(file="Resources/D2Q_Icon-256.png")
+
+    # Set the icon for the root window and all future toplevel windows
+    root.iconphoto(True, icon)
     app = QuestionManagerApp(root)
     root.mainloop()
