@@ -186,12 +186,13 @@ class DocxParser:
                 Points=1,
             )
         elif question_type == "Matching":
+
+            for opt in question_list[1:]:
+                if " / " not in opt:
+                    raise ValueError("Matching question not formatted correctly.")
+
             return MatchingQuestion(
-                QuestionText=(
-                    question_list[0]
-                    if question_list[0][0:6].lower() != "match "
-                    else question_list[0][6:]
-                ),
+                QuestionText=(question_list[0]),
                 ListOfChoiceNumbers=[
                     str(idx + 1) for idx in range(len(question_list[1:]))
                 ],
@@ -208,11 +209,7 @@ class DocxParser:
             )
         elif question_type == "Ordering":
             return OrderingQuestion(
-                QuestionText=(
-                    question_list[0]
-                    if question_list[0][0:6].lower() != "order "
-                    else question_list[0][6:]
-                ),
+                QuestionText=(question_list[0]),
                 ListOfItems=[item.strip() for item in question_list[1:]],
                 Points=1,
             )
